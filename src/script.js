@@ -222,8 +222,53 @@ const tick = () =>
     // Water
     waterMaterial.uniforms.uTime.value = elapsedTime;
 
-    //update silver surfer
-      // Actualiza el uniform de tiempo para cada malla
+
+    //Update Surfer
+    if (silverSurfer) {
+       
+        // Current position of the surfer on the water plane
+        const x = silverSurfer.position.x;
+        const z = silverSurfer.position.z;
+        
+        // Wave parameters (must match those of the shader)
+        const bigWavesElevation = waterMaterial.uniforms.uBigWavesElevation.value;
+        const bigWavesFrequency = waterMaterial.uniforms.uBigWavesFrequency.value;
+        const bigWavesSpeed = waterMaterial.uniforms.uBigWavesSpeed.value;
+        
+        const smallWavesElevation = waterMaterial.uniforms.uSmallWavesElevation.value;
+        const smallWavesFrequency = waterMaterial.uniforms.uSmallWavesFrequency.value;
+        const smallWavesSpeed = waterMaterial.uniforms.uSmallWavesSpeed.value;
+    
+        // Time 
+        const time = waterMaterial.uniforms.uTime.value;
+    
+        // Calculate the wave height at the surfer's position.
+        const waveHeight = 
+            bigWavesElevation * Math.sin(time * bigWavesSpeed + x * bigWavesFrequency.x + z * bigWavesFrequency.y) +
+            smallWavesElevation * Math.sin(time * smallWavesSpeed + x * smallWavesFrequency + z * smallWavesFrequency);
+        
+   
+        silverSurfer.position.y = waveHeight * 0.8;
+
+        const delta = 0.05;
+
+        // Heights at nearby points to estimate slope
+   const heightX1 = bigWavesElevation * Math.sin(time * bigWavesSpeed + (x - delta) * bigWavesFrequency.x + z * bigWavesFrequency.y);
+   const heightX2 = bigWavesElevation * Math.sin(time * bigWavesSpeed + (x + delta) * bigWavesFrequency.x + z * bigWavesFrequency.y);
+   const heightZ1 = bigWavesElevation * Math.sin(time * bigWavesSpeed + x * bigWavesFrequency.x + (z - delta) * bigWavesFrequency.y);
+   const heightZ2 = bigWavesElevation * Math.sin(time * bigWavesSpeed + x * bigWavesFrequency.x + (z + delta) * bigWavesFrequency.y);
+
+   // slopes
+   const tiltX = (heightX2 - heightX1) * 5; // Factor de escala
+   const tiltZ = (heightZ2 - heightZ1) * 5;
+
+
+   silverSurfer.rotation.x = tiltZ;
+   silverSurfer.rotation.z = -tiltX;
+
+    }
+
+  
      
       
 
