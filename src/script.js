@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import GUI from 'lil-gui';
 import waterVertexShader from './shaders/water/vertex.glsl';
 import waterFragmentShader from './shaders/water/fragment.glsl';
@@ -34,6 +36,15 @@ const debugObject = {};
 // Canvas
 const canvas = document.querySelector('canvas.webgl');
 
+//Loaders
+const dracoLoader = new DRACOLoader();
+
+dracoLoader.setDecoderPath('/draco/');
+
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+
+
 // Scene
 const scene = new THREE.Scene();
 
@@ -41,6 +52,55 @@ const scene = new THREE.Scene();
 // const axesHelper = new THREE.AxesHelper();
 // axesHelper.position.y += 0.25;
 // scene.add(axesHelper);
+
+// Crea una luz direccional y colócala en la escena
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(1, 1, 1);
+scene.add(directionalLight);
+
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight2.position.set(-2, 5, -2);
+scene.add(directionalLight2);
+
+/**
+ * Models- GLTF Loader
+ */
+
+let silverSurfer;
+
+gltfLoader.load(
+    '/models/silver_surfer.glb',
+    (gltf) => {
+        // gltf.scene es un objeto THREE.Group que contiene el modelo
+        silverSurfer = gltf.scene;
+      
+        
+        // Opcional: ajustar escala, posición o rotación del modelo
+        silverSurfer.scale.set(0.3, 0.3, 0.3);
+        silverSurfer.position.set(0, 0, 0);
+
+          // Recorrer todas las mallas del modelo
+          silverSurfer.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;   
+              child.receiveShadow = true; 
+            }
+          });
+          
+    
+        // Agregar el modelo a la escena
+        scene.add(silverSurfer);
+      },
+      (xhr) => {
+        // Callback para el progreso de la carga (opcional)
+        console.log((xhr.loaded / xhr.total * 100) + '% cargado');
+      },
+      (error) => {
+        // Callback en caso de error
+        console.error('Error al cargar el modelo:', error);
+      }
+);
+
 
 /**
  * Water
@@ -103,6 +163,7 @@ const water = new THREE.Mesh(waterGeometry, waterMaterial);
 water.rotation.x = - Math.PI * 0.5;
 scene.add(water);
 
+
 /**
  * Sizes
  */
@@ -160,6 +221,11 @@ const tick = () =>
 
     // Water
     waterMaterial.uniforms.uTime.value = elapsedTime;
+
+    //update silver surfer
+      // Actualiza el uniform de tiempo para cada malla
+     
+      
 
     // Update controls
     controls.update();

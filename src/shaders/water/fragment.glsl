@@ -5,9 +5,9 @@ uniform float uColorMultiplier;
 
 varying float vElevation;
 varying vec3 vNormal;
-varying vec3 vPosition;
+varying vec3 vPosition; 
 
-
+#include ../includes/ambientLight.glsl
 #include ../includes/directionalLight.glsl
 #include ../includes/pointLight.glsl
 
@@ -24,11 +24,17 @@ void main(){
 
     //Lights
     vec3 light = vec3(0.0);
+
+    light += ambientLight(
+        vec3(1.0,1.0,1.0),//Light color
+        0.03 //Light intensity
+        )
+        ;
     // light += directionalLight(
     //     vec3(1.0),//Light color
     //     1.0,//Light intensity
     //     normal, //normal instead vNormal
-    //     vec3(-1.0, 0.5, 0.0), //light position
+    //     vec3(0.0, 5.5, 10.0), //light position
     //     viewDirection, // view Direction
     //     30.0 // specular power
     // );
@@ -43,6 +49,10 @@ void main(){
         vPosition, //position
         0.95 //light decay
     );
+
+
+  
+
 
 
 
