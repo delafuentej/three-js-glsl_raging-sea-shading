@@ -215,6 +215,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  */
 const clock = new THREE.Clock();
 
+
+
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime();
@@ -226,19 +228,23 @@ const tick = () =>
     //Update Surfer
     if (silverSurfer) {
        
-        // Current position of the surfer on the water plane
-        const x = silverSurfer.position.x;
-        const z = silverSurfer.position.z;
+           // Current position of the surfer on the water plane
+        // const x = silverSurfer.position.x;
+        // const z = silverSurfer.position.z;
+        const {x , z} = silverSurfer.position;
         
-        // Wave parameters (must match those of the shader)
-        const bigWavesElevation = waterMaterial.uniforms.uBigWavesElevation.value;
-        const bigWavesFrequency = waterMaterial.uniforms.uBigWavesFrequency.value;
-        const bigWavesSpeed = waterMaterial.uniforms.uBigWavesSpeed.value;
+        const { 
+          uBigWavesElevation: { value: bigWavesElevation }, 
+          uBigWavesFrequency: { value: bigWavesFrequency }, 
+          uBigWavesSpeed: { value: bigWavesSpeed } 
+      } = waterMaterial.uniforms;
         
-        const smallWavesElevation = waterMaterial.uniforms.uSmallWavesElevation.value;
-        const smallWavesFrequency = waterMaterial.uniforms.uSmallWavesFrequency.value;
-        const smallWavesSpeed = waterMaterial.uniforms.uSmallWavesSpeed.value;
-    
+        const { 
+          uSmallWavesElevation: { value: smallWavesElevation }, 
+          uSmallWavesFrequency: { value: smallWavesFrequency }, 
+          uSmallWavesSpeed: { value: smallWavesSpeed } 
+      } = waterMaterial.uniforms;
+      console.log('smallWavesElevation.x',smallWavesElevation)
         // Time 
         const time = waterMaterial.uniforms.uTime.value;
     
@@ -247,24 +253,37 @@ const tick = () =>
             bigWavesElevation * Math.sin(time * bigWavesSpeed + x * bigWavesFrequency.x + z * bigWavesFrequency.y) +
             smallWavesElevation * Math.sin(time * smallWavesSpeed + x * smallWavesFrequency + z * smallWavesFrequency);
         
-   
+     // console.log('waveHeight', waveHeight);
         silverSurfer.position.y = waveHeight * 0.8;
 
-        const delta = 0.05;
+        const delta =0.05;
 
         // Heights at nearby points to estimate slope
-   const heightX1 = bigWavesElevation * Math.sin(time * bigWavesSpeed + (x - delta) * bigWavesFrequency.x + z * bigWavesFrequency.y);
-   const heightX2 = bigWavesElevation * Math.sin(time * bigWavesSpeed + (x + delta) * bigWavesFrequency.x + z * bigWavesFrequency.y);
+   const heightX1 = bigWavesElevation * Math.sin(time * bigWavesSpeed + (x - delta) * bigWavesFrequency.x + z * bigWavesFrequency.y) +
+                    smallWavesElevation * Math.sin(time * smallWavesSpeed + (x - delta) * smallWavesFrequency + z * smallWavesFrequency);
+                    ;
+   const heightX2 = bigWavesElevation * Math.sin(time * bigWavesSpeed + (x + delta) * bigWavesFrequency.x + z * bigWavesFrequency.y) +
+                    smallWavesElevation * Math.sin(time * smallWavesSpeed + (x + delta) * smallWavesFrequency + z * smallWavesFrequency);
    const heightZ1 = bigWavesElevation * Math.sin(time * bigWavesSpeed + x * bigWavesFrequency.x + (z - delta) * bigWavesFrequency.y);
-   const heightZ2 = bigWavesElevation * Math.sin(time * bigWavesSpeed + x * bigWavesFrequency.x + (z + delta) * bigWavesFrequency.y);
+                    smallWavesElevation * Math.sin(time * smallWavesSpeed + x * smallWavesFrequency + (z - delta) * smallWavesFrequency);
+   const heightZ2 = bigWavesElevation * Math.sin(time * bigWavesSpeed + x * bigWavesFrequency.x + (z + delta) * bigWavesFrequency.y) +
+                  smallWavesElevation * Math.sin(time * smallWavesSpeed + x * smallWavesFrequency + (z + delta) * smallWavesFrequency);
+
 
    // slopes
-   const tiltX = (heightX2 - heightX1) * 5; // Factor de escala
-   const tiltZ = (heightZ2 - heightZ1) * 5;
+   const tiltX = (heightX2 - heightX1) * 1.75; // Factor de escala
+   const tiltZ = (heightZ2 - heightZ1) * 1.5;
+  //  console.log('tiltX',tiltX);
+  //  console.log('tiltZ',tiltZ);
 
 
-   silverSurfer.rotation.x = tiltZ;
-   silverSurfer.rotation.z = -tiltX;
+  //  silverSurfer.rotation.x = tiltZ;
+  //  silverSurfer.rotation.z = -tiltX;
+
+ // Interpolación para suavizar los cambios de inclinación
+ silverSurfer.rotation.x = THREE.MathUtils.lerp(silverSurfer.rotation.x, tiltZ, 1.75);
+ silverSurfer.rotation.z = THREE.MathUtils.lerp(silverSurfer.rotation.z, -tiltX, 1.5);
+            
 
     }
 
