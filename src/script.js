@@ -1,10 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+//import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import GUI from 'lil-gui';
 import waterVertexShader from './shaders/water/vertex.glsl';
 import waterFragmentShader from './shaders/water/fragment.glsl';
+import overlayVertexShader from './shaders/overlay/vertex.glsl';
+import overlayFragmentShader from './shaders/overlay/fragment.glsl';
+import { gsap } from 'gsap';
+
 
 /**
  * Steps
@@ -37,11 +42,34 @@ const debugObject = {};
 const canvas = document.querySelector('canvas.webgl');
 
 //Loaders
+
+const loadingBar = document.querySelector('.loading-bar');
+
+const loadingManager = new THREE.LoadingManager(
+  //loaded
+  ()=> {
+      window.setTimeout(() =>{
+        gsap.to(overlayMaterial.uniforms.uAlpha, { duration: 3, value: 0, delay: 1 })
+
+        // Update loadingBarElement
+        loadingBar.classList.add('loaded');
+        loadingBar.style.transform = '';
+      }, 500 );
+  
+  },
+  (itemUrl, itemsLoaded, itemsTotal) => {
+    const progressRatio = itemsLoaded / itemsTotal;
+    loadingBar.style.transform = `scaleX(${progressRatio})`;
+
+  }
+)
+
+//const rgbeLoader = new RGBELoader();
 const dracoLoader = new DRACOLoader();
 
 dracoLoader.setDecoderPath('/draco/');
 
-const gltfLoader = new GLTFLoader();
+const gltfLoader = new GLTFLoader(loadingManager);
 gltfLoader.setDRACOLoader(dracoLoader);
 
 
@@ -61,6 +89,77 @@ scene.add(directionalLight);
 const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight2.position.set(-2, 5, -2);
 scene.add(directionalLight2);
+
+
+
+/**
+ * Overlay
+ */
+const overlayGeometry = new THREE.PlaneGeometry(2, 2, 1, 1);
+
+
+const overlayMaterial = new THREE.ShaderMaterial({
+    transparent: true,
+   // wireframe: true,
+    vertexShader: overlayVertexShader,
+    fragmentShader: overlayFragmentShader,
+    uniforms: {
+        uAlpha: new THREE.Uniform(1)
+    }
+});
+const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial);
+scene.add(overlay);
+
+/**
+ * Update all materials
+ */
+const updateAllMaterials = () =>
+  {
+      scene.traverse((child) =>
+      {
+          if(child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial)
+          {
+              // child.material.envMap = environmentMap
+              child.material.envMapIntensity = debugObject.envMapIntensity;
+              child.material.needsUpdate = true;
+              child.castShadow = true;
+              child.receiveShadow = true;
+          }
+      })
+  };
+
+  
+/**
+ * Environment map
+ */
+
+
+// const loadEnvironmentMap = async () => {
+//   try {
+//       const environmentMap = await new Promise((resolve, reject) => {
+//           rgbeLoader.load(
+//               './environmentMap/sea.hdr',//.exr
+//               resolve,
+//               undefined,
+//               reject
+//           );
+//       });
+
+//       environmentMap.mapping = THREE.EquirectangularReflectionMapping;
+      
+      
+//       scene.environment = environmentMap;
+//       scene.background = environmentMap;
+
+//     scene.background.wrapS = THREE.RepeatWrapping;
+//  scene.background.repeat.y = -10; // Invierte la imagen en X
+
+//   } catch (error) {
+//       console.error('Error loading environment map:', error);
+//   }
+// };
+
+// loadEnvironmentMap();
 
 /**
  * Models- GLTF Loader

@@ -17,3 +17,35 @@ body
     left: 0;
     outline: none;
 }
+
+.loading-bar {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 10px; /* Aumentamos el grosor para mayor impacto */
+    background: linear-gradient(90deg, #ff0000, #0000ff); /* Efecto de degradado */
+    border-radius: 5px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s ease-in-out;
+    will-change: transform;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8), 0 0 15px rgba(0, 0, 255, 0.8);;
+    animation: pulseGlow 1.5s infinite alternate;
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.8), 0 0 15px rgba(0, 0, 255, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(255, 0, 0, 1), 0 0 25px rgba(0, 0, 255, 1);
+    }
+}
+
+
+.loading-bar.loaded{
+   
+    transform-origin: 100% 0;
+    transition: transform 1.5s ease-in-out;
+}
