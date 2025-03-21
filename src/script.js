@@ -130,38 +130,6 @@ const updateAllMaterials = () =>
 
   
 /**
- * Environment map
- */
-
-
-// const loadEnvironmentMap = async () => {
-//   try {
-//       const environmentMap = await new Promise((resolve, reject) => {
-//           rgbeLoader.load(
-//               './environmentMap/sea.hdr',//.exr
-//               resolve,
-//               undefined,
-//               reject
-//           );
-//       });
-
-//       environmentMap.mapping = THREE.EquirectangularReflectionMapping;
-      
-      
-//       scene.environment = environmentMap;
-//       scene.background = environmentMap;
-
-//     scene.background.wrapS = THREE.RepeatWrapping;
-//  scene.background.repeat.y = -10; // Invierte la imagen en X
-
-//   } catch (error) {
-//       console.error('Error loading environment map:', error);
-//   }
-// };
-
-// loadEnvironmentMap();
-
-/**
  * Models- GLTF Loader
  */
 
